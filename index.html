@@ -6,6 +6,7 @@
     <title>SI Materi Kuliah - Supabase</title>
     
     <!-- Library Supabase JS -->
+    <!-- Library ini membuat global variable bernama 'supabase' -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -150,7 +151,7 @@
                 </div>
             </div>
             <div style="display: flex; gap: 15px;">
-                <button class="btn btn-outline" onclick="alert('Contact Us')">Contact</button>
+                <button class="btn btn-outline" onclick="alert('Fitur Contact akan segera hadir')">Contact</button>
                 <button class="btn btn-danger" onclick="window.location.reload()">Logout</button>
             </div>
         </header>
@@ -249,9 +250,17 @@
         // --- CONFIGURATION SUPABASE ---
         // GANTI DENGAN URL DAN ANON KEY DARI DASHBOARD SUPABASE ANDA
         const SUPABASE_URL = 'https://xfqtyqwfdmqkgevdssvv.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmcXR5cXdmZG1xa2dldmRzc3Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTY2MjYsImV4cCI6MjA4MjQ3MjYyNn0.Trcdgsig9lQQ58bzv61i4Ue7hvjCyjc6LPqfzaWId-Q'; // <--- PENTING!
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmcXR5cXdmZG1xa2dldmRzc3Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTY2MjYsImV4cCI6MjA4MjQ3MjYyNn0.Trcdgsig9lQQ58bzv61i4Ue7hvjCyjc6LPqfzaWId-Q'; // <--- PENTING! ISI DENGAN KEY ASLI
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // --- FIX: Menggunakan nama variabel 'supabaseClient' agar tidak bentrok dengan global 'supabase' dari CDN ---
+        let supabaseClient;
+        
+        // Cek apakah library sudah termuat sebelum membuat client
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+            console.error("Library Supabase gagal dimuat. Periksa koneksi internet.");
+        }
 
         // --- GLOBAL VARS ---
         let currentUser = null;
@@ -291,8 +300,13 @@
             const id = document.getElementById('input-id').value;
             const pass = document.getElementById('input-sandi').value;
 
+            if (!supabaseClient) {
+                showToast("Koneksi database error", "error");
+                return;
+            }
+
             // Query manual ke tabel users (bukan auth supabase) agar sesuai logika NPM/NIDN
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('users')
                 .select('*')
                 .eq('username', id)
@@ -308,7 +322,7 @@
             currentUser = data;
             
             // Fetch profil
-            const { data: profile } = await supabase.from('profile').select('*').eq('user_id', data.id).single();
+            const { data: profile } = await supabaseClient.from('profile').select('*').eq('user_id', data.id).single();
             if(profile) {
                 currentUser.avatar = profile.avatar_url;
                 currentUser.sesi = profile.sesi_belajar;
@@ -333,10 +347,9 @@
             const prodi = document.getElementById('filter-prodi').value;
             const sem = document.getElementById('filter-semester').value;
 
-            let query = supabase.from('materials').select('*');
+            let query = supabaseClient.from('materials').select('*');
             if(prodi) query = query.eq('prodi', prodi);
             if(sem) query = query.eq('semester', sem);
-            // Catatan: Supabase JS filter berbeda sedikit, kita filter frontend sederhana dulu
 
             const { data, error } = await query;
             renderMaterials(data || []);
@@ -381,17 +394,20 @@
                 author_name: currentUser.nama_lengkap
             };
 
-            const { error } = await supabase.from('materials').insert([payload]);
+            const { error } = await supabaseClient.from('materials').insert([payload]);
             if(!error) {
                 showToast('Materi ditambahkan', 'success');
                 closeModal('modal-material');
                 fetchMaterials();
+            } else {
+                showToast('Gagal menambah materi', 'error');
+                console.log(error);
             }
         }
 
         async function deleteMaterial(id) {
             if(!confirm('Hapus?')) return;
-            await supabase.from('materials').delete().eq('id', id);
+            await supabaseClient.from('materials').delete().eq('id', id);
             fetchMaterials();
             showToast('Dihapus', 'success');
         }
@@ -399,7 +415,7 @@
         // --- PROFILE LOGIC (SUPABASE) ---
         async function openProfileModal() {
             document.getElementById('modal-profile').classList.remove('hidden');
-            const { data } = await supabase.from('profile').select('*').eq('user_id', currentUser.id).single();
+            const { data } = await supabaseClient.from('profile').select('*').eq('user_id', currentUser.id).single();
             
             if(data) {
                 document.getElementById('p-nama').innerText = currentUser.nama_lengkap;
@@ -449,8 +465,8 @@
                 prodi: document.getElementById('p-prodi').innerText
             };
 
-            await supabase.from('profile').upsert(profileData);
-            await supabase.from('users').update(userData).eq('id', currentUser.id);
+            await supabaseClient.from('profile').upsert(profileData);
+            await supabaseClient.from('users').update(userData).eq('id', currentUser.id);
 
             showToast('Profil Disimpan', 'success');
             closeModal('modal-profile');
@@ -464,10 +480,10 @@
             const oldPass = document.getElementById('reset-old-pass').value;
             const newPass = document.getElementById('reset-new-pass').value;
 
-            const { data, error } = await supabase.from('users').select('*').eq('username', user).eq('password', oldPass).single();
+            const { data, error } = await supabaseClient.from('users').select('*').eq('username', user).eq('password', oldPass).single();
             
             if(data) {
-                await supabase.from('users').update({ password: newPass }).eq('username', user);
+                await supabaseClient.from('users').update({ password: newPass }).eq('username', user);
                 showToast('Password Berhasil Diubah', 'success');
                 closeModal('modal-reset');
             } else {
