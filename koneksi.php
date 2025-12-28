@@ -1,7 +1,7 @@
 <?php
- $host = "localhost";
- $user = "root";
- $pass = "";
+ $host = "db.xfqtyqwfdmqkgevdssvv.supabase.co";
+ $user = "postgres";
+ $pass = "8ON9yJvlNF04paCL";
  $db1 = "si_materi_kuliah";
  $db2 = "biodata_akademik";
 
@@ -10,4 +10,5 @@
 if ($conn->connect_error) {
     die("Koneksi gagal: " . $conn->connect_error);
 }
+
 ?>
