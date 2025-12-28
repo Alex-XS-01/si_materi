@@ -3,242 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SI Materi Kuliah - Animasi Keren</title>
+    <title>SI Materi Kuliah - Supabase</title>
+    
+    <!-- Library Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        /* --- CSS VARIABLES (WARNA ASLI TETAP) --- */
+        /* CSS SAMA SEPERTI SEBELUMNYA (Dengan sedikit perbaikan animasi) */
         :root {
             --primary: #2563eb;
             --primary-dark: #1e40af;
             --secondary: #64748b;
             --accent: #0f172a;
-            --bg: #f1f5f9;
+            --bg: #f8fafc;
             --white: #ffffff;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --radius: 16px;
             --danger: #ef4444;
             --success: #10b981;
-            --anim-curve: cubic-bezier(0.34, 1.56, 0.64, 1); /* Efek Pantul Halus */
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; }
+        body { background: var(--bg); color: var(--accent); min-height: 100vh; display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
         
-        body {
-            background: #f8fafc;
-            color: var(--accent);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden; /* Mencegah scroll bar horizontal saat animasi */
-        }
-
-        .hidden { display: none !important; opacity: 0; }
-
-        /* --- ANIMATIONS KEYFRAMES --- */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes slideRight {
-            from { opacity: 0; transform: translateX(50px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* --- COMPONENTS DENGAN ANIMASI --- */
         .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s var(--anim-curve);
-            font-size: 0.95rem;
-            position: relative;
-            overflow: hidden;
+            padding: 12px 24px; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 0.95rem;
         }
-        /* Efek Hover Keren */
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
-        /* Efek Klik (Tactile) */
-        .btn:active { transform: translateY(-1px) scale(0.98); }
-        
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); }
         .btn-danger { background: var(--danger); color: white; }
         .btn-secondary { background: var(--secondary); color: white; }
         .btn-outline { border: 1px solid var(--secondary); background: transparent; color: var(--secondary); }
         .btn-success { background: var(--success); color: white; }
 
-        .form-group { margin-bottom: 20px; position: relative; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; margin-left: 5px; transition: 0.3s; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
         .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--radius);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: var(--white);
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; transition: 0.3s;
         }
-        /* Input Focus Animasi */
-        .form-control:focus { 
-            outline: none; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); 
-            transform: translateY(-2px);
-            background: #fff;
-        }
-        .form-group:focus-within label { color: var(--primary); transform: translateX(5px); }
+        .form-control:focus { outline: none; border-color: var(--primary); }
 
-        /* --- AUTH CARD (ANIMASI MASUK) --- */
-        .auth-container {
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; padding: 20px;
-            perspective: 1000px;
-        }
+        .auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .auth-card {
-            background: white;
-            padding: 45px;
-            border-radius: 24px;
-            box-shadow: var(--shadow-lg);
-            width: 100%; max-width: 450px;
-            border: 1px solid rgba(0,0,0,0.03);
-            animation: fadeInUp 0.8s var(--anim-curve) forwards;
-            opacity: 0;
+            background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%; max-width: 450px; animation: fadeIn 0.8s ease;
         }
-        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
         .role-switch {
             display: flex; background: #f1f5f9; padding: 6px; border-radius: 12px; margin-bottom: 25px;
         }
-        .role-btn {
-            flex: 1; text-align: center; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--secondary); transition: all 0.4s var(--anim-curve);
-        }
-        .role-btn.active { 
-            background: white; color: var(--primary); 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
-            transform: scale(1.05);
-        }
+        .role-btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--secondary); transition: 0.3s; }
+        .role-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-        /* --- DASHBOARD (STAGGERED ANIMATION) --- */
         .dashboard-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
-        
         .navbar {
-            background: white; padding: 15px 30px; box-shadow: var(--shadow-sm);
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100;
-            animation: fadeInDown 0.6s ease forwards;
+            background: white; padding: 15px 30px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center;
         }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-
         .main-content { padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
         
-        .section-about {
-            background: white; padding: 30px; border-radius: 24px; margin-bottom: 40px;
-            border-left: 6px solid var(--success); box-shadow: var(--shadow-sm);
-            animation: fadeInUp 0.8s 0.2s forwards;
-            opacity: 0;
-        }
-
-        /* Filter Bar */
-        .filter-bar {
-            background: white; padding: 25px; border-radius: 24px; margin-bottom: 40px;
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
-            box-shadow: var(--shadow-sm);
-            animation: fadeInUp 0.8s 0.3s forwards;
-            opacity: 0;
-        }
-
-        /* Material Grid Cards */
         .material-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px;
         }
         .material-card {
-            background: white; border-radius: 24px; padding: 25px;
-            box-shadow: var(--shadow-sm); 
-            transition: all 0.4s var(--anim-curve);
-            border-top: 5px solid var(--primary); 
-            position: relative;
-            opacity: 0; /* Mulai tersembunyi untuk animasi JS */
-            animation: popIn 0.6s forwards;
+            background: white; border-radius: 20px; padding: 25px; box-shadow: var(--shadow);
+            border-top: 4px solid var(--primary); transition: 0.3s;
         }
-        /* Hover Efek Keren untuk Kartu */
-        .material-card:hover { 
-            transform: translateY(-10px) scale(1.02); 
-            box-shadow: var(--shadow-lg);
-            z-index: 10;
-        }
+        .material-card:hover { transform: translateY(-5px); }
 
-        /* --- MODAL ANIMASI --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000;
             display: flex; justify-content: center; align-items: center;
-            backdrop-filter: blur(4px);
-            animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { background: white; padding: 40px; border-radius: 24px; width: 100%; max-width: 600px; }
 
-        .modal-content {
-            background: white; padding: 40px; border-radius: 24px; width: 100%; max-width: 600px;
-            max-height: 90vh; overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            animation: popIn 0.4s var(--anim-curve) forwards;
-        }
-
-        /* Profile Widget */
-        .profile-widget { 
-            display: flex; align-items: center; gap: 12px; cursor: pointer; 
-            padding: 8px 16px; border-radius: 50px; transition: 0.3s; background: #f8fafc;
-        }
-        .profile-widget:hover { 
-            background: white; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-            transform: scale(1.02); 
-        }
-        .avatar { 
-            width: 45px; height: 45px; border-radius: 50%; object-fit: cover; 
-            border: 3px solid var(--primary); 
-            transition: transform 0.4s var(--anim-curve);
-        }
-        .profile-widget:hover .avatar { transform: rotate(10deg) scale(1.1); }
-
-        /* Toast Notifikasi */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
         .toast { 
-            padding: 16px 24px; background: white; border-radius: 12px; 
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
-            border-left: 6px solid var(--primary); 
-            animation: slideRight 0.5s var(--anim-curve) forwards; 
-            min-width: 300px; font-weight: 500;
-            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px 25px; background: white; border-radius: 12px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 10px; animation: slideIn 0.3s ease; border-left: 5px solid var(--primary);
         }
-        .toast.error { border-left-color: var(--danger); animation: slideRight 0.5s ease, shake 0.4s ease-in-out; }
-        .toast.success { border-left-color: var(--success); }
-
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        
+        .profile-widget { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 8px 16px; border-radius: 50px; background: #f1f5f9; transition: 0.3s; }
+        .profile-widget:hover { background: white; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
     </style>
 </head>
 <body>
 
-    <!-- CONTAINER NOTIFIKASI -->
-    <div id="toast-container"></div>
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
-    <!-- HALAMAN 1: LOGIN -->
+    <!-- HALAMAN LOGIN -->
     <div id="auth-view" class="auth-container">
         <div class="auth-card">
-            <div class="auth-header" style="text-align: center; margin-bottom: 30px;">
-                <h2 style="color: var(--primary); font-size: 2rem; margin-bottom: 10px;">SI Materi Kuliah</h2>
-                <p style="color: var(--secondary);">Masuk ke akun Anda</p>
+            <div style="text-align: center; margin-bottom: 25px;">
+                <h2 style="color: var(--primary);">SI Materi Kuliah</h2>
+                <p style="color: var(--secondary);">Masuk dengan Supabase</p>
             </div>
             
             <div class="role-switch">
@@ -246,10 +105,10 @@
                 <div class="role-btn" onclick="switchRole('dosen')">Dosen</div>
             </div>
 
-            <form id="login-form" onsubmit="handleLogin(event)">
+            <form onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label id="label-id">NPM / NIDN</label>
-                    <input type="text" id="input-id" class="form-control" placeholder="Masukkan ID Anda" required>
+                    <label id="label-id">NPM</label>
+                    <input type="text" id="input-id" class="form-control" placeholder="Masukkan ID" required>
                 </div>
                 <div class="form-group">
                     <label>Sandi</label>
@@ -258,10 +117,8 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Masuk</button>
             </form>
             
-            <div style="margin-top: 25px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-                <a href="#" onclick="openResetModal()" style="color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: 0.3s;">
-                    Lupa Sandi / Ganti Password ?
-                </a>
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="#" onclick="openResetModal()" style="color: var(--primary); text-decoration: none; font-weight: 600;">Lupa Sandi ?</a>
             </div>
         </div>
     </div>
@@ -269,254 +126,159 @@
     <!-- MODAL RESET PASSWORD -->
     <div id="modal-reset" class="modal-overlay hidden">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="color: var(--accent);">Ganti Kata Sandi</h2>
-                <button class="btn btn-secondary" style="padding: 5px 12px; border-radius: 50%;" onclick="closeModal('modal-reset')">✕</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>Ganti Kata Sandi</h2>
+                <button class="btn btn-secondary" onclick="closeModal('modal-reset')">X</button>
             </div>
-            <p style="margin-bottom: 25px; color: var(--secondary);">Verifikasi kata sandi lama untuk keamanan.</p>
             <form onsubmit="handleResetPassword(event)">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="reset-username" class="form-control" placeholder="Username Anda" required>
-                </div>
-                <div class="form-group">
-                    <label>Kata Sandi Lama</label>
-                    <input type="password" id="reset-old-pass" class="form-control" placeholder="Password saat ini" required>
-                </div>
-                <div class="form-group">
-                    <label>Kata Sandi Baru</label>
-                    <input type="password" id="reset-new-pass" class="form-control" placeholder="Password baru" required>
-                </div>
-                <div style="display:flex; gap:15px; margin-top:35px;">
-                    <button type="button" class="btn btn-secondary" style="flex:1" onclick="closeModal('modal-reset')">Batal</button>
-                    <button type="submit" class="btn btn-primary" style="flex:1">Simpan Perubahan</button>
-                </div>
+                <div class="form-group"><label>Username</label><input type="text" id="reset-username" class="form-control" required></div>
+                <div class="form-group"><label>Sandi Lama</label><input type="password" id="reset-old-pass" class="form-control" required></div>
+                <div class="form-group"><label>Sandi Baru</label><input type="password" id="reset-new-pass" class="form-control" required></div>
+                <div style="display:flex; gap:10px;"><button class="btn btn-secondary" onclick="closeModal('modal-reset')">Batal</button><button class="btn btn-primary">Simpan</button></div>
             </form>
         </div>
     </div>
 
-    <!-- HALAMAN 2: DASHBOARD UTAMA -->
+    <!-- DASHBOARD -->
     <div id="dashboard-view" class="dashboard-wrapper hidden">
         <header class="navbar">
-            <div class="nav-left">
-                <a href="#" class="logo" style="font-weight: 800; font-size: 1.5rem; color: var(--primary); text-decoration: none;">SI Materi<span style="color:var(--accent)">Kuliah</span></a>
-                
-                <!-- Profile Widget -->
+            <div class="nav-left" style="display: flex; gap: 20px;">
+                <a href="#" style="font-weight: 800; font-size: 1.5rem; color: var(--primary); text-decoration: none;">SI Materi<span style="color:var(--accent)">Kuliah</span></a>
                 <div class="profile-widget" onclick="openProfileModal()">
-                    <img id="nav-avatar" src="https://picsum.photos/seed/user/100/100.jpg" alt="Profile" class="avatar">
-                    <div class="profile-info" style="display: flex; flex-direction: column; line-height: 1.1;">
-                        <span id="nav-name" class="profile-name" style="font-weight: 700; font-size: 0.95rem;">Nama Pengguna</span>
-                        <span id="nav-role" class="profile-role" style="font-size: 0.75rem; color: var(--secondary);">Mahasiswa</span>
-                    </div>
+                    <img id="nav-avatar" src="" class="avatar">
+                    <div><div id="nav-name" style="font-weight: 700;"></div><div id="nav-role" style="font-size: 0.75rem; color: var(--secondary);"></div></div>
                 </div>
             </div>
-            <div class="nav-right" style="display: flex; gap: 15px; align-items: center;">
-                <button class="btn btn-outline" onclick="alert('Hubungi: +62 812-3456-7890')">Contact Us</button>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn btn-outline" onclick="alert('Contact Us')">Contact</button>
                 <button class="btn btn-danger" onclick="window.location.reload()">Logout</button>
             </div>
         </header>
 
         <main class="main-content">
-            <!-- About Us -->
-            <section class="section-about">
-                <h3 style="color: var(--primary); margin-bottom: 10px;">Tentang Website</h3>
-                <p style="color: var(--secondary); line-height: 1.7; font-size: 1.05rem;">
-                    Portal ini didedikasikan untuk meningkatkan kualitas akses pendidikan tinggi dengan menyediakan materi perkuliahan yang terstruktur. Tujuan utamanya adalah mendukung mahasiswa dalam pembelajaran mandiri dan memfasilitasi dosen dalam manajemen materi kurikulum secara digital, efisien, dan terintegrasi demi terciptanya ekosistem akademik yang modern.
-                </p>
+            <section style="background: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; border-left: 5px solid var(--success);">
+                <h3>Tentang Website</h3>
+                <p style="color: var(--secondary);">Portal materi kuliah terintegrasi database Supabase. Data tersimpan secara real-time dan aman.</p>
             </section>
 
-            <!-- Filter & Search -->
-            <section class="filter-bar">
-                <div class="form-group" style="margin:0;">
-                    <label>Program Studi</label>
+            <!-- Filter -->
+            <section style="background: white; padding: 25px; border-radius: 20px; margin-bottom: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div class="form-group" style="margin:0"><label>Prodi</label>
                     <select id="filter-prodi" class="form-control" onchange="fetchMaterials()">
-                        <option value="all">Semua Prodi</option>
-                        <option value="Informatika">Informatika</option>
-                        <option value="Sistem Informasi">Sistem Informasi</option>
-                        <option value="Bisnis Digital">Bisnis Digital</option>
+                        <option value="">Semua</option><option value="Informatika">Informatika</option><option value="Sistem Informasi">Sistem Informasi</option>
                     </select>
                 </div>
-                <div class="form-group" style="margin:0;">
-                    <label>Semester</label>
+                <div class="form-group" style="margin:0"><label>Semester</label>
                     <select id="filter-semester" class="form-control" onchange="fetchMaterials()">
-                        <option value="all">Semua Semester</option>
+                        <option value="">Semua</option>
+                        <!-- JS fills 1-8 -->
                     </select>
-                </div>
-                <div class="form-group" style="margin:0;">
-                    <label>Bab</label>
-                    <select id="filter-bab" class="form-control" onchange="fetchMaterials()">
-                        <option value="all">Semua Bab</option>
-                        <option value="Bab 1">Bab 1</option>
-                        <option value="Bab 2">Bab 2</option>
-                        <option value="Bab 3">Bab 3</option>
-                        <option value="Bab 4">Bab 4</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin:0;">
-                    <label>Sub-bab</label>
-                    <input type="text" id="filter-subbab" class="form-control" placeholder="Cari judul..." onkeyup="fetchMaterials()">
                 </div>
                 <div id="action-add-container" class="hidden" style="display:flex; align-items:end;">
-                    <button class="btn btn-primary" style="width: 100%;" onclick="openMaterialModal()">+ Tambah Materi</button>
+                    <button class="btn btn-primary" onclick="openMaterialModal()">+ Tambah Materi</button>
                 </div>
             </section>
 
-            <!-- Daftar Materi -->
-            <section id="material-list" class="material-grid">
-                <!-- Material cards injected by JS -->
-            </section>
+            <div id="material-list" class="material-grid"></div>
         </main>
     </div>
 
     <!-- MODAL PROFILE -->
     <div id="modal-profile" class="modal-overlay hidden">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="color: var(--accent);">Profil Akademik</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>Profil Akademik</h2>
                 <button class="btn btn-secondary" onclick="closeModal('modal-profile')">X</button>
             </div>
-            
-            <div style="text-align: center; margin-bottom: 30px;">
-                <img id="modal-avatar" src="" class="avatar" style="width: 120px; height: 120px; border-width: 4px; cursor: pointer;" onclick="document.getElementById('upload-avatar').click()">
-                <br><br>
+            <div style="text-align: center; margin-bottom: 25px;">
+                <img id="modal-avatar" src="" class="avatar" style="width: 120px; height: 120px; border-width: 4px; cursor:pointer;" onclick="document.getElementById('upload-avatar').click()">
                 <input type="file" id="upload-avatar" class="hidden" accept="image/*" onchange="changeAvatar(this)">
                 <button class="btn btn-outline" style="font-size:0.9rem;">Ubah Foto</button>
-                <p style="font-size: 0.8rem; color: var(--secondary); margin-top: 10px;">*Foto akan disimpan otomatis.</p>
-            </div>
-
-            <div class="profile-detail-view">
-                <div class="profile-detail-row" style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
-                    <span class="profile-detail-label" style="font-weight: 700; color: var(--secondary);">Nama Lengkap</span>
-                    <span id="p-nama" class="profile-detail-value" contenteditable="false" style="color: #94a3b8; font-weight: 600;"></span>
-                </div>
-                <div class="profile-detail-row" style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
-                    <span class="profile-detail-label" style="font-weight: 700; color: var(--secondary);">ID (NPM/NIDN)</span>
-                    <span id="p-id" class="profile-detail-value" contenteditable="false" style="color: #94a3b8; font-weight: 600;"></span>
-                </div>
-                
-                <div class="profile-detail-row" style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
-                    <span class="profile-detail-label" style="font-weight: 700; color: var(--secondary);">Nama Institusi</span>
-                    <span id="p-instansi" class="profile-detail-value" contenteditable="true" style="border-bottom: 1px dashed #cbd5e1; padding: 2px 5px; border-radius: 4px; cursor: text;">-</span>
-                </div>
-
-                <!-- Khusus MAHASISWA -->
-                <div id="row-sesi" class="profile-detail-row" style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
-                    <span class="profile-detail-label" style="font-weight: 700; color: var(--secondary);">Sesi Belajar</span>
-                    <span id="p-sesi" class="profile-detail-value" contenteditable="true" style="border-bottom: 1px dashed #cbd5e1; padding: 2px 5px; border-radius: 4px; cursor: text;">-</span>
-                </div>
-
-                <div id="row-prodi" class="profile-detail-row" style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
-                    <span class="profile-detail-label" style="font-weight: 700; color: var(--secondary);">Program Studi</span>
-                    <span id="p-prodi" class="profile-detail-value" contenteditable="true" style="border-bottom: 1px dashed #cbd5e1; padding: 2px 5px; border-radius: 4px; cursor: text;">-</span>
-                </div>
-
-                <div id="row-dosen" class="profile-detail-row" style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
-                    <span class="profile-detail-label" style="font-weight: 700; color: var(--secondary);">Pembimbing Akademik</span>
-                    <span id="p-dosen" class="profile-detail-value" contenteditable="true" style="border-bottom: 1px dashed #cbd5e1; padding: 2px 5px; border-radius: 4px; cursor: text;">-</span>
-                </div>
-
             </div>
             
-            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9; text-align: center; color: var(--secondary); font-size: 0.85rem;">
-                *Klik pada teks data untuk mengubahnya.
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px dashed #e2e8f0;">
+                <span style="font-weight:700; color:var(--secondary)">Nama</span>
+                <span id="p-nama" contenteditable="true" style="padding:2px 5px; border-radius:4px;"></span>
             </div>
-            <button class="btn btn-success" style="width:100%; margin-top: 20px;" onclick="saveProfile()">Simpan Perubahan</button>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px dashed #e2e8f0;">
+                <span style="font-weight:700; color:var(--secondary)">ID</span>
+                <span id="p-id" style="color:#94a3b8;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px dashed #e2e8f0;">
+                <span style="font-weight:700; color:var(--secondary)">Institusi</span>
+                <span id="p-instansi" contenteditable="true" style="padding:2px 5px; border-radius:4px;"></span>
+            </div>
+            <!-- Khusus Mahasiswa -->
+            <div id="row-sesi" style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px dashed #e2e8f0;">
+                <span style="font-weight:700; color:var(--secondary)">Sesi</span>
+                <span id="p-sesi" contenteditable="true" style="padding:2px 5px; border-radius:4px;"></span>
+            </div>
+            <div id="row-prodi" style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px dashed #e2e8f0;">
+                <span style="font-weight:700; color:var(--secondary)">Prodi</span>
+                <span id="p-prodi" contenteditable="true" style="padding:2px 5px; border-radius:4px;"></span>
+            </div>
+            <div id="row-dosen" style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px dashed #e2e8f0;">
+                <span style="font-weight:700; color:var(--secondary)">Pembimbing</span>
+                <span id="p-dosen" contenteditable="true" style="padding:2px 5px; border-radius:4px;"></span>
+            </div>
+
+            <button class="btn btn-success" style="width:100%; margin-top:20px;" onclick="saveProfile()">Simpan Perubahan</button>
         </div>
     </div>
 
-    <!-- MODAL TAMBAH/EDIT MATERI -->
+    <!-- MODAL MATERI -->
     <div id="modal-material" class="modal-overlay hidden">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 id="modal-material-title" style="color: var(--accent);">Tambah Materi</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 id="modal-material-title">Tambah Materi</h2>
                 <button class="btn btn-secondary" onclick="closeModal('modal-material')">X</button>
             </div>
             <form onsubmit="handleMaterialSubmit(event)">
                 <input type="hidden" id="mat-id">
-                <div class="form-group">
-                    <label>Program Studi</label>
-                    <select id="mat-prodi" class="form-control" required>
-                        <option value="Informatika">Informatika</option>
-                        <option value="Sistem Informasi">Sistem Informasi</option>
-                        <option value="Bisnis Digital">Bisnis Digital</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Semester</label>
-                    <select id="mat-semester" class="form-control" required>
-                        <!-- JS Fill 1-8 -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Bab</label>
-                    <select id="mat-bab" class="form-control" required>
-                        <option value="Bab 1">Bab 1</option>
-                        <option value="Bab 2">Bab 2</option>
-                        <option value="Bab 3">Bab 3</option>
-                        <option value="Bab 4">Bab 4</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Judul / Sub-bab</label>
-                    <input type="text" id="mat-subbab" class="form-control" placeholder="Contoh: Pengenalan Algoritma" required>
-                </div>
-                <div class="form-group">
-                    <label>Link File (URL)</label>
-                    <input type="text" id="mat-file" class="form-control" placeholder="https://..." required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan Materi</button>
+                <div class="form-group"><label>Prodi</label><select id="mat-prodi" class="form-control" required><option value="Informatika">Informatika</option><option value="Sistem Informasi">Sistem Informasi</option></select></div>
+                <div class="form-group"><label>Semester</label><select id="mat-semester" class="form-control" required></select></div>
+                <div class="form-group"><label>Bab</label><select id="mat-bab" class="form-control" required><option value="Bab 1">Bab 1</option><option value="Bab 2">Bab 2</option></select></div>
+                <div class="form-group"><label>Judul</label><input type="text" id="mat-subbab" class="form-control" required></div>
+                <div class="form-group"><label>Link File</label><input type="text" id="mat-file" class="form-control" required></div>
+                <button class="btn btn-primary" style="width:100%">Simpan</button>
             </form>
         </div>
     </div>
 
     <script>
-        // --- GLOBAL VARIABLES ---
+        // --- CONFIGURATION SUPABASE ---
+        // GANTI DENGAN URL DAN ANON KEY DARI DASHBOARD SUPABASE ANDA
+        const SUPABASE_URL = 'https://xfqtyqwfdmqkgevdssvv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmcXR5cXdmZG1xa2dldmRzc3Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTY2MjYsImV4cCI6MjA4MjQ3MjYyNn0.Trcdgsig9lQQ58bzv61i4Ue7hvjCyjc6LPqfzaWId-Q'; // <--- PENTING!
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- GLOBAL VARS ---
         let currentUser = null;
         let currentRole = 'mahasiswa';
 
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
-            populateSemesterOptions();
+            populateSemesters();
         });
 
-        function populateSemesterOptions() {
-            const sems = [1,2,3,4,5,6,7,8];
-            const targets = ['filter-semester', 'mat-semester'];
-            targets.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    sems.forEach(s => {
-                        const opt = document.createElement('option');
-                        opt.value = s;
-                        opt.text = `Semester ${s}`;
-                        el.appendChild(opt);
-                    });
-                }
-            });
+        function populateSemesters() {
+            for(let i=1; i<=8; i++) {
+                const opt = `<option value="${i}">Semester ${i}</option>`;
+                document.getElementById('filter-semester').innerHTML += opt;
+                document.getElementById('mat-semester').innerHTML += opt;
+            }
         }
 
-        // --- NOTIFICATIONS DENGAN ANIMASI ---
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast ' + type;
-            
-            let icon = '';
-            if(type === 'success') icon = '✅ ';
-            if(type === 'error') icon = '❌ ';
-            if(type === 'info') icon = 'ℹ️ ';
-
-            toast.innerHTML = `<span>${icon}${message}</span>`;
-            container.appendChild(toast);
-            
-            setTimeout(() => { 
-                toast.style.opacity = '0'; 
-                toast.style.transform = 'translateY(-20px)'; 
-                setTimeout(() => toast.remove(), 300); 
-            }, 3000);
+        function showToast(msg, type='info') {
+            const div = document.createElement('div');
+            div.className = 'toast';
+            div.innerHTML = msg;
+            div.style.borderLeftColor = type === 'error' ? 'red' : 'green';
+            document.getElementById('toast-container').appendChild(div);
+            setTimeout(() => div.remove(), 3000);
         }
 
-        // --- LOGIN LOGIC ---
+        // --- LOGIN LOGIC (SUPABASE) ---
         function switchRole(role) {
             currentRole = role;
             document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -529,325 +291,191 @@
             const id = document.getElementById('input-id').value;
             const pass = document.getElementById('input-sandi').value;
 
-            try {
-                const response = await fetch('api/login.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: id, password: pass })
-                });
-                const result = await response.json();
+            // Query manual ke tabel users (bukan auth supabase) agar sesuai logika NPM/NIDN
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('username', id)
+                .eq('password', pass)
+                .single();
 
-                if (result.status === 'success') {
-                    currentUser = result.data;
-                    
-                    document.getElementById('auth-view').classList.add('hidden');
-                    document.getElementById('dashboard-view').classList.remove('hidden');
-                    
-                    document.getElementById('nav-name').innerText = currentUser.nama_lengkap;
-                    document.getElementById('nav-role').innerText = currentUser.role;
-                    document.getElementById('nav-avatar').src = currentUser.avatar;
-                    
-                    if(currentUser.role === 'dosen') {
-                        document.getElementById('action-add-container').classList.remove('hidden');
-                        document.getElementById('action-add-container').style.display = 'flex';
-                    } else {
-                        document.getElementById('action-add-container').classList.add('hidden');
-                        document.getElementById('action-add-container').style.display = 'none';
-                    }
-
-                    showToast('Login Berhasil!', 'success');
-                    fetchMaterials();
-                } else {
-                    showToast(result.message, 'error');
-                }
-            } catch (err) {
-                showToast('Gagal menghubungi server', 'error');
-            }
-        }
-
-        // --- RESET PASSWORD LOGIC ---
-        function openResetModal() {
-            document.getElementById('modal-reset').classList.remove('hidden');
-        }
-
-        async function handleResetPassword(e) {
-            e.preventDefault();
-            const username = document.getElementById('reset-username').value;
-            const oldPass = document.getElementById('reset-old-pass').value;
-            const newPass = document.getElementById('reset-new-pass').value;
-
-            if(oldPass === newPass) {
-                showToast('Kata sandi baru tidak boleh sama dengan yang lama!', 'error');
+            if (error || !data) {
+                showToast('Username atau password salah', 'error');
                 return;
             }
 
-            try {
-                const response = await fetch('api/reset_password.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username, old_password: oldPass, new_password: newPass })
-                });
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    showToast(result.message, 'success');
-                    closeModal('modal-reset');
-                    document.getElementById('reset-username').value = '';
-                    document.getElementById('reset-old-pass').value = '';
-                    document.getElementById('reset-new-pass').value = '';
-                } else {
-                    showToast(result.message, 'error');
-                }
-            } catch (error) {
-                showToast('Gagal menghubungi server', 'error');
+            // Simpan data session
+            currentUser = data;
+            
+            // Fetch profil
+            const { data: profile } = await supabase.from('profile').select('*').eq('user_id', data.id).single();
+            if(profile) {
+                currentUser.avatar = profile.avatar_url;
+                currentUser.sesi = profile.sesi_belajar;
+                currentUser.pembimbing = profile.pembimbing_akademik;
             }
+
+            // Tampilan
+            document.getElementById('auth-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            document.getElementById('nav-name').innerText = data.nama_lengkap;
+            document.getElementById('nav-role').innerText = data.role;
+            document.getElementById('nav-avatar').src = currentUser.avatar || 'https://picsum.photos/seed/user/200/200.jpg';
+
+            if(data.role === 'dosen') document.getElementById('action-add-container').classList.remove('hidden');
+            
+            fetchMaterials();
+            showToast('Login Berhasil', 'success');
         }
 
-        // --- MATERIAL LOGIC ---
+        // --- MATERIAL LOGIC (SUPABASE) ---
         async function fetchMaterials() {
             const prodi = document.getElementById('filter-prodi').value;
             const sem = document.getElementById('filter-semester').value;
-            const bab = document.getElementById('filter-bab').value;
-            const sub = document.getElementById('filter-subbab').value;
 
-            const url = `api/materi.php?action=get&prodi=${prodi}&semester=${sem}&bab=${bab}&sub=${sub}`;
+            let query = supabase.from('materials').select('*');
+            if(prodi) query = query.eq('prodi', prodi);
+            if(sem) query = query.eq('semester', sem);
+            // Catatan: Supabase JS filter berbeda sedikit, kita filter frontend sederhana dulu
 
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                renderMaterials(data);
-            } catch (err) {
-                showToast('Gagal memuat data', 'error');
-            }
+            const { data, error } = await query;
+            renderMaterials(data || []);
         }
 
         function renderMaterials(data) {
             const list = document.getElementById('material-list');
             list.innerHTML = '';
-
-            if(data.length === 0) {
-                list.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:gray; margin-top:20px;">Tidak ada materi.</p>';
-                return;
-            }
-
-            data.forEach((m, index) => {
+            
+            data.forEach(m => {
                 const card = document.createElement('div');
                 card.className = 'material-card';
-                
-                // Set animation delay untuk efek cascading (muncul berurutan)
-                card.style.animationDelay = `${index * 0.1}s`;
-
-                let actions = `
-                    <a href="${m.file_url}" target="_blank" class="btn btn-primary" style="text-decoration:none; font-size:0.85rem; padding: 8px 16px;">Unduh Materi</a>
-                `;
-                
-                if (currentUser.role === 'dosen') {
-                    actions = `
-                        <div style="display:flex; gap:8px;">
-                            <button onclick="editMaterial(${m.id}, '${m.prodi}', '${m.semester}', '${m.bab}', '${m.subbab}', '${m.file_url}')" class="btn btn-secondary" style="padding: 6px 12px; font-size:0.8rem;">Edit</button>
-                            <button onclick="deleteMaterial(${m.id})" class="btn btn-danger" style="padding: 6px 12px; font-size:0.8rem;">Hapus</button>
-                        </div>
-                        <a href="${m.file_url}" target="_blank" class="btn btn-primary" style="text-decoration:none; font-size:0.85rem; padding: 8px 16px;">Unduh</a>
-                    `;
-                }
-
                 card.innerHTML = `
-                    <div style="display:flex; gap:8px; margin-bottom:15px; flex-wrap:wrap;">
-                        <span style="font-size:0.75rem; padding:4px 10px; border-radius:6px; font-weight:700; text-transform:uppercase; background:#dbeafe; color:#1e40af;">${m.prodi}</span>
-                        <span style="font-size:0.75rem; padding:4px 10px; border-radius:6px; font-weight:700; text-transform:uppercase; background:#f3e8ff; color:#6b21a8;">Sem ${m.semester}</span>
+                    <h4>${m.bab}: ${m.subbab}</h4>
+                    <p style="color:var(--secondary); font-size:0.9rem;">${m.prodi} | Sem ${m.semester}</p>
+                    <div style="margin-top:15px; display:flex; justify-content:space-between; border-top:1px solid #f1f5f9; padding-top:10px;">
+                        <a href="${m.file_url}" target="_blank" class="btn btn-primary" style="font-size:0.8rem; text-decoration:none;">Unduh</a>
+                        ${currentUser.role === 'dosen' ? `
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn btn-danger" style="font-size:0.8rem; padding:5px 10px;" onclick="deleteMaterial(${m.id})">Hapus</button>
+                        </div>` : ''}
                     </div>
-                    <h4 style="font-size:1.15rem; font-weight:800; margin-bottom:8px; color:var(--accent);">${m.bab}: ${m.subbab}</h4>
-                    <div style="font-size:0.9rem; color:var(--secondary); margin-bottom:20px;">Oleh: ${m.author_name}</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:15px; border-top:1px solid #f1f5f9;">${actions}</div>
                 `;
                 list.appendChild(card);
             });
         }
 
-        // --- CRUD MATERI ---
-        function openMaterialModal(isEdit = false) {
-            if (!isEdit) {
-                document.getElementById('modal-material-title').innerText = 'Tambah Materi';
-                document.getElementById('mat-id').value = '';
-                document.getElementById('mat-prodi').value = 'Informatika';
-                document.getElementById('mat-semester').value = '1';
-                document.getElementById('mat-bab').value = 'Bab 1';
-                document.getElementById('mat-subbab').value = '';
-                document.getElementById('mat-file').value = '';
-            }
+        // --- CRUD MATERIAL ---
+        function openMaterialModal() {
             document.getElementById('modal-material').classList.remove('hidden');
-        }
-
-        function editMaterial(id, prodi, sem, bab, sub, file) {
-            openMaterialModal(true);
-            document.getElementById('modal-material-title').innerText = 'Edit Materi';
-            document.getElementById('mat-id').value = id;
-            document.getElementById('mat-prodi').value = prodi;
-            document.getElementById('mat-semester').value = sem;
-            document.getElementById('mat-bab').value = bab;
-            document.getElementById('mat-subbab').value = sub;
-            document.getElementById('mat-file').value = file;
+            document.getElementById('mat-id').value = '';
         }
 
         async function handleMaterialSubmit(e) {
             e.preventDefault();
-            const id = document.getElementById('mat-id').value;
-            const action = id ? 'edit' : 'add';
-            
             const payload = {
                 prodi: document.getElementById('mat-prodi').value,
-                semester: document.getElementById('mat-semester').value,
+                semester: parseInt(document.getElementById('mat-semester').value),
                 bab: document.getElementById('mat-bab').value,
                 subbab: document.getElementById('mat-subbab').value,
-                file: document.getElementById('mat-file').value,
-                author: currentUser.nama_lengkap,
-                id: id
+                file_url: document.getElementById('mat-file').value,
+                author_name: currentUser.nama_lengkap
             };
 
-            try {
-                const res = await fetch(`api/materi.php?action=${action}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await res.json();
-                if(result.status === 'success') {
-                    showToast('Data berhasil disimpan', 'success');
-                    closeModal('modal-material');
-                    fetchMaterials();
-                }
-            } catch (err) {
-                showToast('Gagal menyimpan', 'error');
+            const { error } = await supabase.from('materials').insert([payload]);
+            if(!error) {
+                showToast('Materi ditambahkan', 'success');
+                closeModal('modal-material');
+                fetchMaterials();
             }
         }
 
         async function deleteMaterial(id) {
-            if(!confirm('Hapus materi ini?')) return;
-            await fetch('api/materi.php?action=delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: id })
-            });
+            if(!confirm('Hapus?')) return;
+            await supabase.from('materials').delete().eq('id', id);
             fetchMaterials();
-            showToast('Data dihapus', 'success');
+            showToast('Dihapus', 'success');
         }
 
-        // --- PROFILE LOGIC ---
-        // --- PROFILE LOGIC (FIXED DISPLAY & DATABASE SYNC) ---
+        // --- PROFILE LOGIC (SUPABASE) ---
         async function openProfileModal() {
             document.getElementById('modal-profile').classList.remove('hidden');
+            const { data } = await supabase.from('profile').select('*').eq('user_id', currentUser.id).single();
             
-            try {
-                // Ambil data FRESH dari database PHP (jangan pakai session browser)
-                const response = await fetch(`api/profil.php?action=get&user_id=${currentUser.id}`);
-                const res = await response.json();
-                
-                if(res.status === 'success' && res.data) {
-                    const d = res.data;
+            if(data) {
+                document.getElementById('p-nama').innerText = currentUser.nama_lengkap;
+                document.getElementById('p-id').innerText = currentUser.username;
+                document.getElementById('p-instansi').innerText = data.nama_institusi;
+                document.getElementById('modal-avatar').src = data.avatar_url;
 
-                    // 1. Isi Data Umum (Dari DB 'users')
-                    document.getElementById('p-nama').innerText = d.nama_lengkap;
-                    document.getElementById('p-id').innerText = d.username;
-                    document.getElementById('p-instansi').innerText = d.nama_institusi || 'Universitas Teknologi Digital';
-                    
-                    // Isi Foto (Dari DB 'profile')
-                    document.getElementById('modal-avatar').src = d.avatar_url || 'https://picsum.photos/seed/user/200/200.jpg';
-
-                    // 2. Logika Tampilan Berdasarkan Role (SESUAI REQUEST)
-                    if (d.role === 'mahasiswa') {
-                        // MAHASISWA: Tampilkan Semua
-                        
-                        // Tampilkan baris hidden
-                        document.getElementById('row-sesi').style.display = 'flex';
-                        document.getElementById('row-prodi').style.display = 'flex';
-                        document.getElementById('row-dosen').style.display = 'flex';
-
-                        // Isi Data Spesifik dari Database
-                        document.getElementById('p-sesi').innerText = d.sesi_belajar || 'Ganjil 2023/2024';
-                        document.getElementById('p-prodi').innerText = d.prodi || 'Informatika'; // Ambil dari tabel users
-                        document.getElementById('p-dosen').innerText = d.pembimbing_akademik || '-';
-                        
-                    } else {
-                        // DOSEN: Sembunyikan Field Mahasiswa
-                        
-                        // Sembunyikan baris
-                        document.getElementById('row-sesi').style.display = 'none';
-                        document.getElementById('row-prodi').style.display = 'none';
-                        document.getElementById('row-dosen').style.display = 'none';
-                    }
+                if(currentUser.role === 'mahasiswa') {
+                    document.getElementById('row-sesi').style.display = 'flex';
+                    document.getElementById('row-prodi').style.display = 'flex';
+                    document.getElementById('row-dosen').style.display = 'flex';
+                    document.getElementById('p-sesi').innerText = data.sesi_belajar;
+                    document.getElementById('p-prodi').innerText = currentUser.prodi;
+                    document.getElementById('p-dosen').innerText = data.pembimbing_akademik;
+                } else {
+                    document.getElementById('row-sesi').style.display = 'none';
+                    document.getElementById('row-prodi').style.display = 'none';
+                    document.getElementById('row-dosen').style.display = 'none';
                 }
-            } catch (error) {
-                console.error("Gagal mengambil profil", error);
-                showToast("Gagal memuat data profil dari server", "error");
             }
         }
 
         function changeAvatar(input) {
-            if (input.files && input.files[0]) {
+            if(input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const newSrc = e.target.result;
-                    document.getElementById('nav-avatar').src = newSrc;
-                    document.getElementById('modal-avatar').src = newSrc;
-                    showToast('Gambar dipilih, silakan simpan.', 'info');
-                }
+                reader.onload = (e) => {
+                    document.getElementById('nav-avatar').src = e.target.result;
+                    document.getElementById('modal-avatar').src = e.target.result;
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-         // --- SAVE PROFILE LOGIC (PREVENT DATA MISMATCH) ---
         async function saveProfile() {
-            // Ambil nilai dari UI (contenteditable)
-            const namaBaru = document.getElementById('p-nama').innerText;
-            const prodiBaru = document.getElementById('p-prodi').innerText;
-            
-            const payload = {
+            // Update Profile
+            const profileData = {
                 user_id: currentUser.id,
-                // Data ke Database 'users'
-                nama: namaBaru,
-                prodi: prodiBaru === '-' ? currentUser.prodi : prodiBaru,
-                
-                // Data ke Database 'profile'
-                avatar: document.getElementById('modal-avatar').src,
-                institusi: document.getElementById('p-instansi').innerText,
-                sesi: document.getElementById('p-sesi').innerText,
-                pembimbing: document.getElementById('p-dosen').innerText
+                avatar_url: document.getElementById('modal-avatar').src,
+                nama_institusi: document.getElementById('p-instansi').innerText,
+                sesi_belajar: document.getElementById('p-sesi').innerText,
+                pembimbing_akademik: document.getElementById('p-dosen').innerText
             };
 
-            try {
-                // Kirim update ke PHP (Update KEDUA DB)
-                const response = await fetch('api/profil.php?action=update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    showToast('Profil berhasil disinkronkan ke database!', 'success');
-                    
-                    // Update Tampilan Navbar
-                    document.getElementById('nav-name').innerText = namaBaru;
-                    document.getElementById('nav-avatar').src = payload.avatar;
-                    
-                    // Jika prodi berubah (mahasiswa), update variable session
-                    if(currentUser.role === 'mahasiswa') {
-                        currentUser.prodi = payload.prodi;
-                    }
+            // Update Users (Nama & Prodi)
+            const userData = {
+                nama_lengkap: document.getElementById('p-nama').innerText,
+                prodi: document.getElementById('p-prodi').innerText
+            };
 
-                    closeModal('modal-profile');
-                } else {
-                    showToast('Gagal: ' + result.message, 'error');
-                }
-            } catch (error) {
-                showToast('Terjadi kesalahan koneksi', 'error');
+            await supabase.from('profile').upsert(profileData);
+            await supabase.from('users').update(userData).eq('id', currentUser.id);
+
+            showToast('Profil Disimpan', 'success');
+            closeModal('modal-profile');
+        }
+
+        // --- RESET PASSWORD (SIMPLE) ---
+        function openResetModal() { document.getElementById('modal-reset').classList.remove('hidden'); }
+        async function handleResetPassword(e) {
+            e.preventDefault();
+            const user = document.getElementById('reset-username').value;
+            const oldPass = document.getElementById('reset-old-pass').value;
+            const newPass = document.getElementById('reset-new-pass').value;
+
+            const { data, error } = await supabase.from('users').select('*').eq('username', user).eq('password', oldPass).single();
+            
+            if(data) {
+                await supabase.from('users').update({ password: newPass }).eq('username', user);
+                showToast('Password Berhasil Diubah', 'success');
+                closeModal('modal-reset');
+            } else {
+                showToast('Password lama salah', 'error');
             }
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     </script>
 </body>
 </html>
