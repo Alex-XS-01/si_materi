@@ -287,7 +287,7 @@
             setTimeout(() => div.remove(), 3000);
         }
 
-        // --- LOGIN LOGIC (SUPABASE) ---
+              // --- LOGIN LOGIC (SUPABASE) ---
         function switchRole(role) {
             currentRole = role;
             document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -297,51 +297,87 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const id = document.getElementById('input-id').value;
-            const pass = document.getElementById('input-sandi').value;
+            
+            // 1. AMBIL DATA DAN HILANGKAN SPASI DI AWAL/AKHIR (.trim())
+            const id = document.getElementById('input-id').value.trim();
+            const pass = document.getElementById('input-sandi').value.trim();
 
             if (!supabaseClient) {
                 showToast("Koneksi database error", "error");
                 return;
             }
 
-            // Query manual ke tabel users (bukan auth supabase) agar sesuai logika NPM/NIDN
+            // DEBUG: Cek di Console Browser (F12) untuk melihat input Anda
+            console.log("Mencoba Login dengan Username:", id);
+            console.log("Password:", pass);
+
+            // 2. GANTI .single() MENJADI .maybeSingle()
+            // .single() akan ERROR jika data tidak ketemu.
+            // .maybeSingle() akan mengembalikan 'null' jika tidak ketemu (ini lebih aman).
+            
+            // PERHATIAN: Pastikan nama kolom di database Anda adalah 'username' dan 'password'.
+            // Jika kolom di DB Anda bernama 'npm' atau 'nidn', ubah bagian .eq('username', id) di bawah.
+            
             const { data, error } = await supabaseClient
                 .from('users')
                 .select('*')
                 .eq('username', id)
                 .eq('password', pass)
-                .single();
+                .maybeSingle(); 
 
-            if (error || !data) {
-                showToast('Username atau password salah', 'error');
+            console.log("Hasil Database:", data);
+            console.log("Error Database:", error);
+
+            // Cek jika error TERJADI (selain karena tidak ketemu) ATAU data memang kosong
+            if (error) {
+                console.error("Error saat kueri:", error);
+                showToast('Terjadi kesalahan pada server database', 'error');
                 return;
             }
 
-            // Simpan data session
+            if (!data) {
+                // Jika masuk sini, artinya Kombinasi Username/Password tidak ada di DB
+                showToast('ID/NPM atau Kata Sandi tidak ditemukan', 'error');
+                return;
+            }
+
+            // 3. SIMPAN DATA SESSION
             currentUser = data;
             
-            // Fetch profil
-            const { data: profile } = await supabaseClient.from('profile').select('*').eq('user_id', data.id).single();
+            // Fetch profil (tambahkan .maybeSingle() juga di sini untuk keamanan)
+            const { data: profile } = await supabaseClient
+                .from('profile') 
+                .select('*') 
+                .eq('user_id', data.id) 
+                .maybeSingle();
+
             if(profile) {
                 currentUser.avatar = profile.avatar_url;
                 currentUser.sesi = profile.sesi_belajar;
                 currentUser.pembimbing = profile.pembimbing_akademik;
             }
 
-            // Tampilan
+            // Tampilan Dashboard
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('dashboard-view').classList.remove('hidden');
-            document.getElementById('nav-name').innerText = data.nama_lengkap;
-            document.getElementById('nav-role').innerText = data.role;
+            
+            // Menampilkan nama lengkap dari database
+            document.getElementById('nav-name').innerText = data.nama_lengkap || data.username;
+            
+            // Menampilkan role (pastikan kolom 'role' di DB berisi 'dosen' atau 'mahasiswa')
+            document.getElementById('nav-role').innerText = data.role; 
+            
             document.getElementById('nav-avatar').src = currentUser.avatar || 'https://picsum.photos/seed/user/200/200.jpg';
 
-            if(data.role === 'dosen') document.getElementById('action-add-container').classList.remove('hidden');
+            // Logika tampilan tombol tambah (hanya untuk dosen)
+            // Pastikan data.role di DB persis huruf kecil 'dosen' atau sesuai logic Anda
+            if(data.role === 'dosen' || data.role === 'Dosen') {
+                document.getElementById('action-add-container').classList.remove('hidden');
+            }
             
             fetchMaterials();
             showToast('Login Berhasil', 'success');
         }
-
         // --- MATERIAL LOGIC (SUPABASE) ---
         async function fetchMaterials() {
             const prodi = document.getElementById('filter-prodi').value;
@@ -495,3 +531,4 @@
     </script>
 </body>
 </html>
+
